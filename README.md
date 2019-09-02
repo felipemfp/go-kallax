@@ -163,7 +163,7 @@ Primary key types need to satisfy the [Identifier](https://godoc.org/github.com/
 The following types can be used as primary key:
 
 * `int64`
-* [`uuid.UUID`](https://godoc.org/github.com/satori/go.uuid#UUID)
+* [`uuid.UUID`](https://godoc.org/github.com/gofrs/uuid#UUID)
 * [`kallax.ULID`](https://godoc.org/github.com/src-d/go-kallax/#ULID): this is a type kallax provides that implements a lexically sortable UUID. You can store it as `uuid` like any other UUID, but internally it's an ULID and you will be able to sort lexically by it.
 
 Due to how sql mapping works, pointers to `uuid.UUID` and `kallax.ULID` are not set to `nil` if they appear as `NULL` in the database, but to [`uuid.Nil`](https://godoc.org/github.com/satori/go.uuid#pkg-variables). Using pointers to UUIDs is discouraged for this reason.
@@ -182,11 +182,11 @@ If you implement this constructor:
 
 ```go
 func newUser(username, password string, emails ...string) (*User, error) {
-        if username != "" || len(emails) == 0 || password != "" {
-                return errors.New("all fields are required")
+        if username == "" || len(emails) == 0 || password == "" {
+                return nil, errors.New("all fields are required")
         }
 
-        return &User{Username: username, Password: password, Emails: emails}
+        return &User{Username: username, Password: password, Emails: emails}, nil
 }
 ```
 
@@ -890,6 +890,22 @@ If that is not the case you can set the following environment variables:
 - `DBNAME`: name of the database
 - `DBUSER`: database user
 - `DBPASS`: database user password
+
+#### Docker PostgreSQL
+
+If you have docker, you may run an instance of postgres in a container:
+
+```
+docker run -it --rm --name kallax \
+ -e POSTGRES_PASSWORD=testing \
+ -e POSTGRES_USER=testing \
+ -e POSTGRES_DB=testing \
+ -v `pwd`/.pgdata:/var/lib/postgresql/data \
+ -p 127.0.0.1:5432:5432 \
+ postgres:11
+```
+
+Remove `.pgdata` after you are done.
 
 License
 -------
